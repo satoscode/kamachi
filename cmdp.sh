@@ -33,6 +33,65 @@ cmdp() {
   READLINE_POINT=${#cmd}
 }
 
+cmdm() {
+  local file="${CMDP_FILE:-$HOME/.commands}"
+  case "${1:-tui}" in
+    tui)
+      local action
+      action=$(printf 'list\nadd\nedit\nrm' | \
+               fzf --height=20% --reverse --prompt='cmdm> ')
+      [ -z "$action" ] && return
+      cmdm "$action"
+      ;;
+    list|ls)
+      awk -F' :: ' '
+        /^#/ { cat=substr($0,3); next }
+        /^[[:space:]]*$/ { next }
+        { count[cat]++ }
+        END { for (c in count) printf "%-20s %d commands\n", c, count[c] }
+      ' "$file" | sort
+      ;;
+    add)
+      read -e -p "Category: " -r cat
+      read -e -p "Title:    " -r title
+      read -e -p "Command:  " -r cmd
+      [[ -z "$cat" || -z "$title" || -z "$cmd" ]] && { echo "Cancelled."; return 1; }
+      printf "%s :: %s :: %s\n" "$cat" "$title" "$cmd" >> "$file"
+      echo "Added."
+      ;;
+    edit)
+      local line
+      line=$(grep -v '^#\|^[[:space:]]*$' "$file" | \
+             fzf --height=40% --reverse --prompt='edit> ')
+      [ -z "$line" ] && return
+      local old_cat old_title old_cmd
+      old_cat=$(echo "$line"   | awk -F' :: ' '{gsub(/^[[:space:]]+|[[:space:]]+$/, "", $1); print $1}')
+      old_title=$(echo "$line" | awk -F' :: ' '{gsub(/^[[:space:]]+|[[:space:]]+$/, "", $2); print $2}')
+      old_cmd=$(echo "$line"   | awk -F' :: ' '{gsub(/^[[:space:]]+|[[:space:]]+$/, "", $3); print $3}')
+      read -e -p "Category: " -i "$old_cat"   -r cat
+      read -e -p "Title:    " -i "$old_title" -r title
+      read -e -p "Command:  " -i "$old_cmd"   -r cmd
+      [[ -z "$cat" || -z "$title" || -z "$cmd" ]] && { echo "Cancelled."; return 1; }
+      awk -v old="$line" -v new="${cat} :: ${title} :: ${cmd}" \
+        '$0 == old { print new; next } { print }' "$file" > "${file}.tmp" && mv "${file}.tmp" "$file"
+      echo "Updated."
+      ;;
+    rm|del)
+      local line
+      line=$(grep -v '^#\|^[[:space:]]*$' "$file" | \
+             fzf --height=40% --reverse --prompt='delete> ')
+      [ -z "$line" ] && return
+      printf "Delete: %s\n[y/N] " "$line"; read -r confirm
+      [[ "$confirm" =~ ^[Yy]$ ]] || { echo "Cancelled."; return; }
+      awk -v del="$line" '$0 != del' "$file" > "${file}.tmp" && mv "${file}.tmp" "$file"
+      echo "Deleted."
+      ;;
+    *)
+      echo "Usage: cmdm <list|add|edit|rm>"
+      ;;
+  esac
+}
+
 alias cmde="${EDITOR:-nvim} ${CMDP_FILE:-$HOME/.commands}"
 alias cmdr="cat ${CMDP_FILE:-$HOME/.commands}"
 
