@@ -1,0 +1,32 @@
+# GIT
+git :: show repo status                            :: git status
+git :: show commit graph (log --graph)             :: git log --oneline --graph --all
+git :: list remote branches                        :: git branch -r
+git :: stage all changes                           :: git add -A
+git :: create commit (write message)               :: git commit -m ""
+git :: amend last commit                           :: git commit --amend
+git :: push new branch for the first time          :: git push --set-upstream origin
+git :: stash uncommitted changes                   :: git stash
+git :: apply last stash                            :: git stash pop
+git :: undo last commit, keep changes staged       :: git reset --soft HEAD~1
+git :: cherry-pick a commit from another branch    :: git cherry-pick
+git :: reorder or edit last commits (rebase -i)    :: git rebase -i HEAD~5
+git :: list configured remotes                     :: git remote -v
+git :: fetch all remotes without merging           :: git fetch --all
+git :: merge branch keeping history (no-ff)        :: git merge --no-ff
+
+# SYSTEM
+system :: update system packages (apt) :: sudo apt update && sudo apt upgrade -y
+
+# DIRECTORIES
+dir :: go to yupana project              :: cd /home/saul/repos/freelance/yupana
+dir :: go to yupana and open claude code :: cd /home/saul/repos/freelance/yupana && claude
+dir :: go to yupana and open neovim      :: cd /home/saul/repos/freelance/yupana && nvim
+
+# BASH
+bash :: edit bashrc with nvim         :: nvim ~/.bashrc
+bash :: reload bashrc                  :: source ~/.bashrc
+
+# KAMACHI
+kamachi :: edit commands list with nvim :: nvim ~/.commands
+kamachi :: edit cmdp script with nvim   :: nvim ~/.cmdp.sh
